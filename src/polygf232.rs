@@ -3,16 +3,19 @@ use std::cmp::max;
 use std::ops::{Add, Sub, Mul, Div};
 use std::iter::IntoIterator;
 
+/// Struct implementing a polynomial with coefficients from the `GF(2^32)` field.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct PolyGF232(Vec<GF232>);
 
 impl PolyGF232 {
+    /// Creates a new PolyGF232 object
     pub fn new<I: IntoIterator<Item = GF232>>(x: I) -> PolyGF232 {
         let mut result = PolyGF232(x.into_iter().collect());
         result.normalize();
         result
     }
 
+    /// Calculates the value of the polynomial for the given argument
     pub fn apply(&self, x: GF232) -> GF232 {
         let mut powx = GF232(1);
         let mut result = GF232(0);
@@ -57,7 +60,7 @@ impl PolyGF232 {
 impl Add<GF232> for PolyGF232 {
     type Output = PolyGF232;
 
-    fn add(mut self, other: GF232) -> PolyGF232 {
+    fn add(self, other: GF232) -> PolyGF232 {
         let poly = PolyGF232(vec![other]);
         self + poly
     }

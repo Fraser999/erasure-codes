@@ -2,6 +2,9 @@ use std::ops::{Add, Sub, Mul, Div, Rem};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign, RemAssign};
 use std::fmt;
 
+/// Struct representing a binary polynomial (that is, one with coefficients
+/// that are either 0 or 1). Note that the coefficients are elements of the
+/// Z_2 field, so 1+1 = 0.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct BinaryPolynomial(pub u64);
 

@@ -2,6 +2,7 @@ use gf232::GF232;
 use polygf232::PolyGF232;
 use std::iter;
 
+/// Converts a `u64` to a byte array (little-endian)
 fn as_bytes(mut x: u64) -> Vec<u8> {
     let mut result = vec![];
     for _ in 0..8 {
@@ -11,6 +12,7 @@ fn as_bytes(mut x: u64) -> Vec<u8> {
     result
 }
 
+/// Converts an 8-byte array to a `u64` (little-endian)
 fn as_u64(bytes: &[u8]) -> u64 {
     let mut result = 0;
     for i in 0..8 {
@@ -19,6 +21,8 @@ fn as_u64(bytes: &[u8]) -> u64 {
     result
 }
 
+/// Struct iterating through an iterator returning bytes and converting them
+/// into `u32`s on the fly (little-endian)
 struct IterU32<I: Iterator<Item = u8>> {
     pub inner: I,
 }
@@ -46,6 +50,7 @@ impl<I: Iterator<Item = u8>> Iterator for IterU32<I> {
     }
 }
 
+/// Struct iterating through another iterator and returning `n` elements at a time
 struct TakeN<I: Iterator> {
     n: usize,
     inner: I,
@@ -77,6 +82,7 @@ impl<I: Iterator> Iterator for TakeN<I> {
     }
 }
 
+/// Returns a polynomial interpolating the given points
 fn interpolate(points: Vec<(usize, GF232)>) -> PolyGF232 {
     let mut result = PolyGF232::new(vec![]);
     let _x = PolyGF232::new(vec![GF232(0), GF232(1)]);
@@ -95,6 +101,7 @@ fn interpolate(points: Vec<(usize, GF232)>) -> PolyGF232 {
     result
 }
 
+/// Encodes a single set of `k` `u32`s
 fn encode_stripe(data: &[u32], n: usize, k: usize) -> Vec<u32> {
     assert_eq!(data.len(), k);
     let interpolated = interpolate(data.into_iter().cloned().map(GF232).enumerate().collect());
@@ -106,6 +113,7 @@ fn encode_stripe(data: &[u32], n: usize, k: usize) -> Vec<u32> {
     result
 }
 
+/// Decodes a single set of `k` `u32`s
 fn decode_stripe(data: &[(usize, u32)], k: usize) -> Vec<u32> {
     assert!(data.len() >= k);
     let interpolated = interpolate(
@@ -122,6 +130,9 @@ fn decode_stripe(data: &[(usize, u32)], k: usize) -> Vec<u32> {
     result
 }
 
+/// Encodes a given array of bytes using striping
+/// The length of the data is prepended to the array, and a padding of 0's is appended
+/// in order to make sure that the data length is a multiple of `k` `u32`s.
 pub fn encode(data: &[u8], n: usize, k: usize) -> Vec<Vec<u8>> {
     let stripe_size = k * 4;
     let padding = stripe_size - (8 + data.len()) % stripe_size;
@@ -150,6 +161,8 @@ pub fn encode(data: &[u8], n: usize, k: usize) -> Vec<Vec<u8>> {
     result
 }
 
+/// Struct iterating through multiple iterators simultaneously, returning
+/// their items in a `Vec`
 struct DecodeIter<I: Iterator<Item = u32>> {
     inner: Vec<(usize, I)>,
 }
@@ -176,6 +189,7 @@ impl<I: Iterator<Item = u32>> Iterator for DecodeIter<I> {
     }
 }
 
+/// Decodes `k` datasets into an array of bytes
 pub fn decode(data: &[(usize, &[u8])], k: usize) -> Vec<u8> {
     assert!(data.len() >= k);
     let decode_iter = DecodeIter::new(

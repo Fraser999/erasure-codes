@@ -2,20 +2,23 @@ use polynomial::BinaryPolynomial;
 use std::ops::{Add, Sub, Mul, Div};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 
+/// This is an irreducible degree-32 polynomial: X^32 + X^7 + X^3 + X^2 + 1
 const IRR232: BinaryPolynomial = BinaryPolynomial(0x10000008D);
 
+/// A struct representing an element of the `GF(2^32)` Galois field.
+/// The elements of this field are binary polynomials mod an irreducible
+/// polynomial: IRR232
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct GF232(pub u32);
 
 impl GF232 {
+    /// Finds an inverse of the element using Blankinship's algorithm
     pub fn inverse(&self) -> GF232 {
         if *self == GF232(0) {
             panic!("Division by zero!");
         }
         let mut c = IRR232;
         let mut d = BinaryPolynomial(self.0 as u64);
-        let mut m1 = BinaryPolynomial(1);
-        let mut m = BinaryPolynomial(0);
         let mut n1 = BinaryPolynomial(0);
         let mut n = BinaryPolynomial(1);
         loop {
@@ -26,9 +29,6 @@ impl GF232 {
             }
             c = d;
             d = r;
-            let t = m1;
-            m1 = m;
-            m = t - q * m;
             let t = n1;
             n1 = n;
             n = t - q * n;
