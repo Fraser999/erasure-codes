@@ -3,5 +3,5 @@ name = "binary-polynomial"
 version = "0.1.0"
 authors = ["Bartłomiej Kamiński <fizyk20@gmail.com>"]
 
-[dependencies]
+[dev-dependencies]
 rand = "*"
